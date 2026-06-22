@@ -9,7 +9,7 @@ services:
     name: bands-api
     runtime: node
     plan: free
-    buildCommand: npm ci && npm run build -w packages/shared && npm run build -w apps/api
+    buildCommand: npm ci --include=dev && npm run build -w packages/shared && npm run build -w apps/api
     startCommand: npm run migrate -w apps/api && npm run start -w apps/api
     healthCheckPath: /health
     envVars:
@@ -47,7 +47,7 @@ services:
     name: bands-bot
     runtime: node
     plan: free
-    buildCommand: npm ci && npm run build -w packages/shared && npm run build -w apps/bot
+    buildCommand: npm ci --include=dev && npm run build -w packages/shared && npm run build -w apps/bot
     startCommand: npm run start -w apps/bot
     healthCheckPath: /health
     envVars:
@@ -61,7 +61,7 @@ services:
   - type: web
     name: bands-web
     runtime: static
-    buildCommand: npm ci && npm run build -w packages/shared && npm run build -w apps/web
+    buildCommand: npm ci --include=dev && npm run build -w packages/shared && npm run build -w apps/web
     staticPublishPath: apps/web/dist
     envVars:
       - key: VITE_API_URL
