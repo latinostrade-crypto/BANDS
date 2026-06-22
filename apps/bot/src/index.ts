@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import http from "node:http";
 import path from "node:path";
 import dotenv from "dotenv";
 import { Bot, InlineKeyboard } from "grammy";
@@ -33,3 +34,13 @@ bot.catch((error) => {
 bot.start({
   onStart: (info) => console.log(`Bands bot started as @${info.username}`)
 });
+
+const port = Number(process.env.PORT ?? 10000);
+http
+  .createServer((_req, res) => {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ ok: true }));
+  })
+  .listen(port, () => {
+    console.log(`Bands bot health server listening on ${port}`);
+  });

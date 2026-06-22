@@ -43,12 +43,13 @@ services:
       - key: USE_MOCK_GIFTS
         value: false
 
-  - type: worker
+  - type: web
     name: bands-bot
     runtime: node
     plan: free
     buildCommand: npm ci && npm run build -w packages/shared && npm run build -w apps/bot
     startCommand: npm run start -w apps/bot
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
