@@ -1,0 +1,9 @@
+node_modules
+dist
+.npm-cache
+.docker
+deploy-copy-*
+.env
+.env.local
+coverage
+*.log

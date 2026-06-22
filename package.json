@@ -1,0 +1,33 @@
+{
+  "name": "bands-2",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "dev:bot": "npm run dev -w apps/bot",
+    "dev:all": "powershell -ExecutionPolicy Bypass -File scripts/dev.ps1",
+    "db:migrate": "npm run migrate -w apps/api",
+    "db:seed": "npm run seed -w apps/api",
+    "smoke": "npm run smoke -w apps/api",
+    "setup:local": "npm run infra:up && npm run db:migrate && npm run db:seed",
+    "infra:up": "powershell -ExecutionPolicy Bypass -File scripts/infra.ps1 up",
+    "infra:down": "powershell -ExecutionPolicy Bypass -File scripts/infra.ps1 down",
+    "infra:logs": "powershell -ExecutionPolicy Bypass -File scripts/infra.ps1 logs",
+    "infra:ps": "powershell -ExecutionPolicy Bypass -File scripts/infra.ps1 ps",
+    "build": "npm run build -w packages/shared && npm run build -w apps/api && npm run build -w apps/bot && npm run build -w apps/web",
+    "typecheck": "npm run typecheck -w packages/shared && npm run typecheck -w apps/api && npm run typecheck -w apps/bot && npm run typecheck -w apps/web",
+    "lint": "npm run lint -w packages/shared && npm run lint -w apps/api && npm run lint -w apps/bot && npm run lint -w apps/web",
+    "test": "npm run test -w apps/api"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

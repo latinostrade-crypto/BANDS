@@ -1,0 +1,93 @@
+# AI Agent Skills & Behavioral Rules for Telegram Web3 MVP
+
+Актуализировано: 21.06.2026.
+
+Перед любой разработкой по проекту учитывать эти правила.
+
+## 1. UI/UX для Telegram Mini App
+
+* Приложение проектируется mobile-first под Telegram Web App.
+* Использовать Telegram theme variables:
+  `var(--tg-theme-bg-color)`, `var(--tg-theme-text-color)`, `var(--tg-theme-button-color)`, `var(--tg-theme-button-text-color)`.
+* Темная тема является основной, но интерфейс не должен ломаться в светлой теме Telegram.
+* Контейнер приложения: `max-w-md mx-auto min-h-screen`.
+* Кнопки основных действий: высота не меньше `h-12`.
+* Карточки подарков и участников должны быть легко сканируемыми: имя, место, score, статус, действие.
+* Не делать маркетинговый лендинг. Первый экран должен быть рабочим интерфейсом MVP.
+* Использовать Telegram haptic feedback:
+  * успешный sync: `notificationOccurred('success')`;
+  * vote/like/tab action: `impactOccurred('medium')`.
+
+## 2. Telegram Mini Apps SDK
+
+* Для нового кода предпочтителен актуальный стек `@tma.js/sdk`.
+* Если используется `@twa-dev/sdk`, изолировать его в adapter-слое, чтобы можно было заменить без переписывания UI.
+* Raw init data отправлять на backend в заголовке:
+  `Authorization: tma <raw-init-data>`.
+* На backend не доверять данным пользователя из frontend без проверки initData.
+
+## 3. Telegram Bot API Gifts
+
+* Использовать официальный Bot API метод `getUserGifts`.
+* Метод возвращает `OwnedGifts`: `total_count`, `gifts`, `next_offset`.
+* Реализовать пагинацию до конца списка, потому что `limit` максимум 100.
+* Для MVP конкурса учитывать только `OwnedGiftUnique`.
+* Главные поля `UniqueGift`:
+  * `gift_id` - строковый ID базового подарка;
+  * `base_name` - человекочитаемое имя базового подарка;
+  * `name` - уникальное имя подарка;
+  * `number` - уникальный номер внутри базового подарка;
+  * `model`, `symbol`, `backdrop`;
+  * `is_burned`, `is_from_blockchain`.
+* Антифрод-ключ: `gift_id + number + round_id`.
+
+## 4. Backend Engineering
+
+* Backend: Node.js + TypeScript + Express для MVP.
+* Все внешние интеграции через адаптеры:
+  * `TelegramAuthProvider`;
+  * `TelegramGiftsProvider`;
+  * `TonProofVerifier`.
+* Бизнес-логика синка и голосования не должна напрямую зависеть от формата SDK.
+* Все write-операции, влияющие на score/votes, выполнять в транзакциях.
+* Все SQL-запросы параметризированные.
+
+## 5. PostgreSQL Schema Rules
+
+* `users.tg_id` хранить как `BIGINT UNIQUE`.
+* `target_gifts.gift_id` хранить как `TEXT`, не `BIGINT`.
+* `user_gifts.gift_id` хранить как `TEXT`.
+* `user_gifts.unique_number` хранить как `INT`.
+* Для raw-ответов Telegram использовать `JSONB`, чтобы пережить изменения Bot API без потери данных.
+* Добавлять `round_id` во все таблицы, где данные зависят от конкурса.
+
+## 6. TON Connect
+
+* Использовать `@tonconnect/ui-react`.
+* Обернуть приложение в `TonConnectUIProvider`.
+* Кнопка кошелька: `<TonConnectButton />`.
+* Адрес читать через `useTonAddress`.
+* Для подтверждения владения кошельком использовать `ton_proof`.
+* `tonconnect-manifest.json` должен быть публичным, HTTPS, без CORS/auth/challenge, с PNG/ICO иконкой.
+
+## 7. MVP Boundaries
+
+В MVP входит:
+
+* Telegram auth через initData;
+* sync unique gifts через `getUserGifts`;
+* антифрод по уникальным gift numbers;
+* leaderboard по score;
+* social likes;
+* premium votes для qualified users;
+* TON wallet connect + proof verification;
+* простая admin-зона для target gifts;
+* bot `/start` с кнопкой открытия Web App.
+
+В MVP не входит:
+
+* автоматический mint NFT;
+* marketplace/resale логика;
+* перенос очков при передаче подарка;
+* сложная KYC/Sybil-система вне Telegram gifts;
+* полноценная аналитическая админ-панель.

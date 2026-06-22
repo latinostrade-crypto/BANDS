@@ -1,0 +1,79 @@
+# Security & Verification Rules
+
+Актуализировано: 21.06.2026.
+
+Этот файл фиксирует обязательные правила безопасности для MVP Telegram Web App + TON Connect.
+
+## 1. Telegram Mini App initData
+
+* Все backend-эндпоинты `/api/*`, кроме healthcheck и публичной статики, должны проходить middleware проверки Telegram initData.
+* Frontend передает raw init data в заголовке:
+  `Authorization: tma <raw-init-data>`.
+* Для Node.js предпочтительно использовать проверенную библиотеку `@tma.js/init-data-node`.
+* Если проверка реализуется вручную, алгоритм должен соответствовать Telegram Mini Apps docs:
+  1. разобрать query string;
+  2. исключить `hash`;
+  3. отсортировать пары ключ-значение;
+  4. получить secret key через `HMAC-SHA256(botToken, "WebAppData")`;
+  5. подписать data-check-string через HMAC-SHA256;
+  6. сравнить результат с `hash` через timing-safe compare.
+* Обязательно проверять свежесть `auth_date`. Для MVP: не старше 24 часов.
+* Невалидные запросы отклонять HTTP `403`.
+
+## 2. Telegram Bot API Gifts
+
+* Для синхронизации подарков использовать официальный Bot API метод `getUserGifts`.
+* Метод возвращает `OwnedGifts` с пагинацией: `limit` 1-100, `next_offset` для следующей страницы.
+* MVP конкурса должен учитывать только `OwnedGiftUnique`, потому что у него есть устойчивые поля `gift.gift_id` и `gift.number`.
+* Обычные `OwnedGiftRegular` не использовать для антифрод-рейтинга, если у них нет надежного уникального номера.
+* При синке использовать фильтры осознанно:
+  * `exclude_unique=false`;
+  * для конкурса уникальных подарков можно исключить unlimited и non-upgradable regular gifts;
+  * `exclude_from_blockchain` зависит от правил раунда. По умолчанию для MVP такие подарки не засчитывать, если они не могут быть проверены как Telegram-hosted.
+* Пропускать `UniqueGift.is_burned=true`.
+
+## 3. Anti-Fraud и Sybil Protection
+
+* Главный антифрод-ключ подарка: `(gift_id, unique_number, round_id)`.
+* В PostgreSQL обязателен уникальный индекс:
+  `UNIQUE (gift_id, unique_number, round_id)`.
+* `/api/profile/sync` выполняется в транзакции.
+* Строка текущего пользователя блокируется через `SELECT ... FOR UPDATE`.
+* Если подарок уже закреплен за другим пользователем в текущем раунде, текущему пользователю он не засчитывается.
+* Для MVP не делать автоматический перенос подарка между пользователями после пересылки. Побеждает первый валидный владелец, зафиксированный в раунде.
+* Все SQL-запросы должны быть параметризированными. Строковая конкатенация пользовательских данных запрещена.
+
+## 4. Rate Limits и Redis
+
+* `/api/profile/sync` ограничить Redis lock на 5 минут на пользователя:
+  `sync_lock:<user_id>`.
+* Результат последнего синка можно кешировать в Redis, чтобы UI мог показать данные без повторного запроса к Telegram.
+* При достижении лимита возвращать HTTP `429` и timestamp/seconds до следующей попытки.
+
+## 5. Voting Rules
+
+* `premium` vote разрешен только пользователю с `is_qualified=true`.
+* Перед записью premium vote повторно читать voter из PostgreSQL внутри транзакции.
+* Уникальность premium vote:
+  `UNIQUE (voter_id, candidate_id, round_id)`.
+* `social` like не влияет на NFT-награды. Для него нужен отдельный антиспам-лимит, минимум Redis rate limit по пользователю и кандидату.
+
+## 6. TON Connect
+
+* Frontend использует `@tonconnect/ui-react`.
+* Обязателен публичный `tonconnect-manifest.json` по HTTPS. Иконка в manifest должна быть PNG или ICO, SVG не использовать.
+* Для React использовать `TonConnectUIProvider`, `TonConnectButton`, `useTonAddress`, `useTonWallet`.
+* Привязку кошелька подтверждать через `ton_proof`, а не простым доверием адресу с клиента.
+* Backend должен проверять:
+  * payload/nonce;
+  * timestamp proof;
+  * allowed domain;
+  * Ed25519 signature;
+  * соответствие public key и адреса кошелька.
+* Сохранять `wallet_address` только после успешной проверки `ton_proof`.
+
+## 7. Admin
+
+* Admin API доступен только Telegram ID из env `ADMIN_TG_IDS`.
+* Все admin-действия логировать: кто, когда, что изменил.
+* Добавление target gifts должно поддерживать `gift_id` как строку, `base_name`, `weight`, `is_active`.

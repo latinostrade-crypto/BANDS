@@ -1,0 +1,35 @@
+import fs from "node:fs";
+import path from "node:path";
+import dotenv from "dotenv";
+import { Bot, InlineKeyboard } from "grammy";
+
+for (const file of [path.resolve(process.cwd(), ".env"), path.resolve(process.cwd(), "../../.env")]) {
+  if (fs.existsSync(file)) {
+    dotenv.config({ path: file });
+    break;
+  }
+}
+
+const token = process.env.BOT_TOKEN;
+const webAppUrl = process.env.WEB_APP_URL;
+
+if (!token) throw new Error("BOT_TOKEN is required");
+if (!webAppUrl) throw new Error("WEB_APP_URL is required");
+
+const bot = new Bot(token);
+
+bot.command("start", async (ctx) => {
+  const keyboard = new InlineKeyboard().webApp("Open Bands 2", webAppUrl);
+  await ctx.reply(
+    "Bands 2: contest for Telegram Gifts collectors. Open the app, sync unique gifts, climb the leaderboard, and connect a TON wallet for rewards.",
+    { reply_markup: keyboard }
+  );
+});
+
+bot.catch((error) => {
+  console.error("Bot error", error);
+});
+
+bot.start({
+  onStart: (info) => console.log(`Bands bot started as @${info.username}`)
+});

@@ -1,0 +1,20 @@
+{
+  "name": "@bands/bot",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "grammy": "^1.33.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}
