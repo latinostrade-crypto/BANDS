@@ -30,9 +30,8 @@ export function App() {
     tma.init();
     api
       .auth()
-      .catch(() => undefined)
       .then(refresh)
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(err instanceof Error ? err.message : "Authorization failed"));
   }, []);
 
   const selectTab = (next: Tab) => {

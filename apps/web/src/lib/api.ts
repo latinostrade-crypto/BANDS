@@ -5,6 +5,9 @@ const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 let sessionToken = localStorage.getItem("bands_session");
 
+const missingTelegramAuthMessage =
+  "Telegram auth data is missing. Open from the bot menu button, not as a regular link.";
+
 const authHeader = (): Record<string, string> => {
   const initData = tma.initData();
   if (initData) return { Authorization: `tma ${initData}` };
@@ -13,13 +16,18 @@ const authHeader = (): Record<string, string> => {
 };
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    ...authHeader(),
+    ...(options.headers as Record<string, string> | undefined)
+  };
+  if (path !== "/api/auth" && !headers.Authorization) {
+    throw new Error(missingTelegramAuthMessage);
+  }
+
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
-    headers: {
-      "content-type": "application/json",
-      ...authHeader(),
-      ...(options.headers as Record<string, string> | undefined)
-    }
+    headers
   });
   const data = await response.json().catch(() => null);
   if (!response.ok) {
@@ -38,7 +46,7 @@ export const api = {
     if (!tma.initData()) {
       sessionToken = null;
       localStorage.removeItem("bands_session");
-      throw new Error("Telegram auth data is missing. Open from the bot menu button, not as a regular link.");
+      throw new Error(missingTelegramAuthMessage);
     }
     const data = await request<{ token: string }>("/api/auth", { method: "POST" });
     sessionToken = data.token;
