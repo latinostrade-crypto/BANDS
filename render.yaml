@@ -31,13 +31,13 @@ services:
       - key: ADMIN_TG_IDS
         sync: false
       - key: WEB_APP_URL
-        value: https://bands-web.onrender.com
+        value: https://bands-web-x5q6.onrender.com
       - key: API_PUBLIC_URL
         value: https://bands-api.onrender.com
       - key: TON_PROOF_DOMAIN
-        value: bands-web.onrender.com
+        value: bands-web-x5q6.onrender.com
       - key: TON_MANIFEST_URL
-        value: https://bands-web.onrender.com/tonconnect-manifest.json
+        value: https://bands-web-x5q6.onrender.com/tonconnect-manifest.json
       - key: ALLOW_DEV_AUTH
         value: false
       - key: USE_MOCK_GIFTS
@@ -56,7 +56,7 @@ services:
       - key: BOT_TOKEN
         sync: false
       - key: WEB_APP_URL
-        value: https://bands-web.onrender.com
+        value: https://bands-web-x5q6.onrender.com
 
   - type: web
     name: bands-web
@@ -67,9 +67,9 @@ services:
       - key: VITE_API_URL
         value: https://bands-api.onrender.com
       - key: VITE_APP_URL
-        value: https://bands-web.onrender.com
+        value: https://bands-web-x5q6.onrender.com
       - key: VITE_TON_MANIFEST_URL
-        value: https://bands-web.onrender.com/tonconnect-manifest.json
+        value: https://bands-web-x5q6.onrender.com/tonconnect-manifest.json
     routes:
       - type: rewrite
         source: /*
