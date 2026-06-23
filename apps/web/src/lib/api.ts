@@ -23,6 +23,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
   const data = await response.json().catch(() => null);
   if (!response.ok) {
+    if (response.status === 403) {
+      sessionToken = null;
+      localStorage.removeItem("bands_session");
+    }
     const message = data?.error?.message ?? "Request failed";
     throw new Error(message);
   }
@@ -31,6 +35,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export const api = {
   async auth() {
+    if (!tma.initData()) {
+      sessionToken = null;
+      localStorage.removeItem("bands_session");
+      throw new Error("Open the app from the Telegram bot Web App button");
+    }
     const data = await request<{ token: string }>("/api/auth", { method: "POST" });
     sessionToken = data.token;
     localStorage.setItem("bands_session", data.token);

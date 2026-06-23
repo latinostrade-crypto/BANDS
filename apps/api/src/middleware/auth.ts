@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
+import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
-import { parse, validate } from "@tma.js/init-data-node";
 import { config } from "../config.js";
 import { pool } from "../db/pool.js";
 import { HttpError } from "./error.js";
@@ -34,6 +34,40 @@ const bearerSession = (header: string) => {
   }
 };
 
+const parseAndValidateInitData = (rawInitData: string) => {
+  const params = new URLSearchParams(rawInitData);
+  const receivedHash = params.get("hash");
+  if (!receivedHash) throw new HttpError(403, "Invalid Telegram init data", "invalid_init_data");
+
+  params.delete("hash");
+  const dataCheckString = [...params.entries()]
+    .map(([key, value]) => `${key}=${value}`)
+    .sort()
+    .join("\n");
+
+  const secret = crypto.createHmac("sha256", "WebAppData").update(config.botToken).digest();
+  const expectedHash = crypto.createHmac("sha256", secret).update(dataCheckString).digest("hex");
+  const expected = Buffer.from(expectedHash, "hex");
+  const received = Buffer.from(receivedHash, "hex");
+  if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) {
+    throw new HttpError(403, "Invalid Telegram init data", "invalid_init_data");
+  }
+
+  const authDate = Number(params.get("auth_date") ?? 0);
+  const now = Math.floor(Date.now() / 1000);
+  if (!authDate || now - authDate > config.authMaxAgeSeconds) {
+    throw new HttpError(403, "Telegram init data expired", "init_data_expired");
+  }
+
+  const rawUser = params.get("user");
+  if (!rawUser) throw new HttpError(403, "Telegram user is missing", "invalid_init_data");
+  try {
+    return { user: JSON.parse(rawUser) as TelegramUser };
+  } catch {
+    throw new HttpError(403, "Telegram user is missing", "invalid_init_data");
+  }
+};
+
 export const signSession = (userId: number) =>
   jwt.sign({ userId }, config.jwtSecret, { expiresIn: "7d" });
 
@@ -44,8 +78,7 @@ export const readRawInitData = (req: Request) => {
 };
 
 export const upsertTelegramUser = async (rawInitData: string) => {
-  validate(rawInitData, config.botToken, { expiresIn: config.authMaxAgeSeconds });
-  const initData = parse(rawInitData);
+  const initData = parseAndValidateInitData(rawInitData);
   const tgUser = initData.user as TelegramUser | undefined;
   if (!tgUser?.id) throw new HttpError(403, "Telegram user is missing", "invalid_init_data");
 

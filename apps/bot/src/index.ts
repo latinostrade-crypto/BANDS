@@ -31,6 +31,18 @@ bot.catch((error) => {
   console.error("Bot error", error);
 });
 
+bot.api
+  .setChatMenuButton({
+    menu_button: {
+      type: "web_app",
+      text: "Open Bands 2",
+      web_app: { url: webAppUrl }
+    }
+  })
+  .catch((error) => {
+    console.error("Failed to set bot menu button", error);
+  });
+
 bot.start({
   onStart: (info) => console.log(`Bands bot started as @${info.username}`)
 });
