@@ -13,7 +13,7 @@ type Props = {
 export function ProfileTab({ me, syncSummary, loading, error, onSync }: Props) {
   const user = me?.user;
   const telegramAuthStatus = tma.hasInitData() ? "connected" : "missing";
-  const buildId = import.meta.env.VITE_BUILD_ID ?? "auth3";
+  const buildId = import.meta.env.VITE_BUILD_ID ?? "auth4";
   return (
     <div className="space-y-4">
       <section className="rounded-lg bg-tg-secondary p-4">
