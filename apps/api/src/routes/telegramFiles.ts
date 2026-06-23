@@ -4,6 +4,14 @@ import { HttpError } from "../middleware/error.js";
 
 export const telegramFilesRouter = Router();
 
+const contentTypeForPath = (filePath: string) => {
+  const lower = filePath.toLowerCase();
+  if (lower.endsWith(".webp")) return "image/webp";
+  if (lower.endsWith(".png")) return "image/png";
+  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+  return "application/octet-stream";
+};
+
 telegramFilesRouter.get("/telegram-file", async (req, res, next) => {
   try {
     const fileId = String(req.query.file_id ?? "");
@@ -28,7 +36,7 @@ telegramFilesRouter.get("/telegram-file", async (req, res, next) => {
     }
 
     res.setHeader("cache-control", "public, max-age=86400, immutable");
-    res.setHeader("content-type", assetResponse.headers.get("content-type") ?? "image/jpeg");
+    res.setHeader("content-type", contentTypeForPath(filePath));
     res.setHeader("cross-origin-resource-policy", "cross-origin");
     const buffer = Buffer.from(await assetResponse.arrayBuffer());
     res.send(buffer);
