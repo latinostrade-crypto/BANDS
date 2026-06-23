@@ -33,7 +33,7 @@ services:
       - key: WEB_APP_URL
         value: https://bands-web-x5q6.onrender.com
       - key: API_PUBLIC_URL
-        value: https://bands-api.onrender.com
+        value: https://bands-api-7ppp.onrender.com
       - key: TON_PROOF_DOMAIN
         value: bands-web-x5q6.onrender.com
       - key: TON_MANIFEST_URL
@@ -65,7 +65,7 @@ services:
     staticPublishPath: apps/web/dist
     envVars:
       - key: VITE_API_URL
-        value: https://bands-api.onrender.com
+        value: https://bands-api-7ppp.onrender.com
       - key: VITE_APP_URL
         value: https://bands-web-x5q6.onrender.com
       - key: VITE_TON_MANIFEST_URL
