@@ -1,4 +1,5 @@
 import type { MeResponse, UserGift, UserProfile } from "@bands/shared";
+import { config } from "../config.js";
 import type { DbClient } from "../db/pool.js";
 import { pool } from "../db/pool.js";
 
@@ -29,6 +30,11 @@ const mapGift = (row: Record<string, unknown>): UserGift => ({
   modelName: row.model_name as string | null,
   symbolName: row.symbol_name as string | null,
   backdropName: row.backdrop_name as string | null,
+  imageUrl: row.image_file_id
+    ? `${config.apiPublicUrl}/assets/telegram-file?file_id=${encodeURIComponent(String(row.image_file_id))}`
+    : null,
+  imageWidth: row.image_width === null ? null : Number(row.image_width),
+  imageHeight: row.image_height === null ? null : Number(row.image_height),
   scoreWeight: Number(row.score_weight)
 });
 
@@ -37,7 +43,8 @@ export const getMe = async (userId: number): Promise<MeResponse> => {
   if (!userResult.rowCount) throw new Error("User not found");
   const roundId = await activeRoundId(pool);
   const giftsResult = await pool.query(
-    `SELECT id, gift_id, base_name, unique_name, unique_number, model_name, symbol_name, backdrop_name, score_weight
+    `SELECT id, gift_id, base_name, unique_name, unique_number, model_name, symbol_name,
+       backdrop_name, image_file_id, image_width, image_height, score_weight
      FROM user_gifts
      WHERE user_id = $1 AND round_id = $2
      ORDER BY score_weight DESC, unique_number ASC`,

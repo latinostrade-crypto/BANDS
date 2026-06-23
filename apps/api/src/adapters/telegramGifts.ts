@@ -12,7 +12,21 @@ type BotApiGift = {
     base_name?: string;
     name?: string;
     number?: number;
-    model?: { name?: string };
+    model?: {
+      name?: string;
+      sticker?: {
+        thumbnail?: {
+          file_id?: string;
+          width?: number;
+          height?: number;
+        };
+        thumb?: {
+          file_id?: string;
+          width?: number;
+          height?: number;
+        };
+      };
+    };
     symbol?: { name?: string };
     backdrop?: { name?: string };
   };
@@ -52,6 +66,7 @@ export class BotApiTelegramGiftsProvider implements TelegramGiftsProvider {
       for (const item of payload.result.gifts) {
         const gift = item.gift;
         if (item.type !== "unique" || !gift?.gift_id || typeof gift.number !== "number") continue;
+        const image = gift.model?.sticker?.thumbnail ?? gift.model?.sticker?.thumb;
         gifts.push({
           giftId: gift.gift_id,
           baseName: gift.base_name,
@@ -60,6 +75,9 @@ export class BotApiTelegramGiftsProvider implements TelegramGiftsProvider {
           modelName: gift.model?.name,
           symbolName: gift.symbol?.name,
           backdropName: gift.backdrop?.name,
+          imageFileId: image?.file_id,
+          imageWidth: image?.width,
+          imageHeight: image?.height,
           isBurned: Boolean(item.is_burned),
           isFromBlockchain: Boolean(item.is_from_blockchain),
           rawPayload: item
@@ -84,6 +102,9 @@ export class MockTelegramGiftsProvider implements TelegramGiftsProvider {
         modelName: "Gold",
         symbolName: "Comet",
         backdropName: "Midnight",
+        imageFileId: undefined,
+        imageWidth: 128,
+        imageHeight: 128,
         isBurned: false,
         isFromBlockchain: false,
         rawPayload: { source: "mock", gift_id: "mock-star", number: 128 }
@@ -96,6 +117,9 @@ export class MockTelegramGiftsProvider implements TelegramGiftsProvider {
         modelName: "Chrome",
         symbolName: "Wave",
         backdropName: "Pulse",
+        imageFileId: undefined,
+        imageWidth: 128,
+        imageHeight: 128,
         isBurned: false,
         isFromBlockchain: false,
         rawPayload: { source: "mock", gift_id: "mock-band", number: 42 }

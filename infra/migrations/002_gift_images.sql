@@ -1,0 +1,4 @@
+ALTER TABLE user_gifts
+  ADD COLUMN IF NOT EXISTS image_file_id TEXT NULL,
+  ADD COLUMN IF NOT EXISTS image_width INT NULL,
+  ADD COLUMN IF NOT EXISTS image_height INT NULL;

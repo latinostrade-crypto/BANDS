@@ -19,6 +19,9 @@ export type UserGift = {
   modelName: string | null;
   symbolName: string | null;
   backdropName: string | null;
+  imageUrl: string | null;
+  imageWidth: number | null;
+  imageHeight: number | null;
   scoreWeight: number;
 };
 
@@ -60,6 +63,9 @@ export type SyncedUniqueGift = {
   modelName?: string;
   symbolName?: string;
   backdropName?: string;
+  imageFileId?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   isBurned: boolean;
   isFromBlockchain: boolean;
   rawPayload: unknown;

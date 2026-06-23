@@ -72,20 +72,32 @@ export function ProfileTab({ me, syncSummary, loading, error, onSync }: Props) {
           {me?.gifts.length ? (
             me.gifts.map((gift) => (
               <article key={gift.id} className="rounded-lg bg-tg-secondary p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-black/20">
+                    {gift.imageUrl ? (
+                      <img
+                        src={gift.imageUrl}
+                        alt={gift.baseName ?? gift.uniqueName ?? gift.giftId}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <Gift size={24} className="text-tg-hint" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
                     <h3 className="font-semibold">{gift.baseName ?? gift.giftId}</h3>
                     <p className="text-sm text-tg-hint">
                       #{gift.uniqueNumber} {gift.uniqueName ? `- ${gift.uniqueName}` : ""}
+                    </p>
+                    <p className="mt-2 text-sm text-tg-hint">
+                      {[gift.modelName, gift.symbolName, gift.backdropName].filter(Boolean).join(" / ") || "No traits"}
                     </p>
                   </div>
                   <span className="rounded-md bg-emerald-400/15 px-2 py-1 text-sm text-emerald-200">
                     +{gift.scoreWeight}
                   </span>
                 </div>
-                <p className="mt-3 text-sm text-tg-hint">
-                  {[gift.modelName, gift.symbolName, gift.backdropName].filter(Boolean).join(" / ") || "No traits"}
-                </p>
               </article>
             ))
           ) : (

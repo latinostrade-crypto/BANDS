@@ -30,8 +30,8 @@ export const syncUserGifts = async (user: { id: number; tgId: string }, provider
     let accepted = 0;
     let rejected = 0;
     for (const gift of allGifts) {
-      const weight = targetWeights.get(gift.giftId);
-      if (!weight || gift.isBurned || gift.isFromBlockchain) {
+      const weight = targetWeights.get(gift.giftId) ?? 0;
+      if (gift.isBurned || gift.isFromBlockchain) {
         rejected += 1;
         continue;
       }
@@ -39,10 +39,25 @@ export const syncUserGifts = async (user: { id: number; tgId: string }, provider
       const result = await client.query(
         `INSERT INTO user_gifts (
           user_id, round_id, gift_id, base_name, unique_name, unique_number,
-          model_name, symbol_name, backdrop_name, is_burned, is_from_blockchain, score_weight, raw_payload
+          model_name, symbol_name, backdrop_name, image_file_id, image_width, image_height,
+          is_burned, is_from_blockchain, score_weight, raw_payload
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-        ON CONFLICT (gift_id, unique_number, round_id) DO NOTHING
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+        ON CONFLICT (gift_id, unique_number, round_id)
+        DO UPDATE SET
+          user_id = EXCLUDED.user_id,
+          base_name = EXCLUDED.base_name,
+          unique_name = EXCLUDED.unique_name,
+          model_name = EXCLUDED.model_name,
+          symbol_name = EXCLUDED.symbol_name,
+          backdrop_name = EXCLUDED.backdrop_name,
+          image_file_id = EXCLUDED.image_file_id,
+          image_width = EXCLUDED.image_width,
+          image_height = EXCLUDED.image_height,
+          is_burned = EXCLUDED.is_burned,
+          is_from_blockchain = EXCLUDED.is_from_blockchain,
+          score_weight = EXCLUDED.score_weight,
+          raw_payload = EXCLUDED.raw_payload
         RETURNING id`,
         [
           user.id,
@@ -54,6 +69,9 @@ export const syncUserGifts = async (user: { id: number; tgId: string }, provider
           gift.modelName ?? null,
           gift.symbolName ?? null,
           gift.backdropName ?? null,
+          gift.imageFileId ?? null,
+          gift.imageWidth ?? null,
+          gift.imageHeight ?? null,
           gift.isBurned,
           gift.isFromBlockchain,
           weight,

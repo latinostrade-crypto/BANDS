@@ -9,6 +9,7 @@ import { authRouter } from "./routes/auth.js";
 import { leaderboardRouter } from "./routes/leaderboard.js";
 import { meRouter } from "./routes/me.js";
 import { syncRouter } from "./routes/sync.js";
+import { telegramFilesRouter } from "./routes/telegramFiles.js";
 import { votesRouter } from "./routes/votes.js";
 import { walletRouter } from "./routes/wallet.js";
 
@@ -32,6 +33,7 @@ app.use(
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
+app.use("/assets", telegramFilesRouter);
 
 app.use("/api", authRouter);
 app.use("/api", requireAuth, meRouter);
