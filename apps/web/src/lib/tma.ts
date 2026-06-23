@@ -22,6 +22,9 @@ export const tma = {
   initData() {
     return window.Telegram?.WebApp?.initData ?? "";
   },
+  hasInitData() {
+    return Boolean(window.Telegram?.WebApp?.initData);
+  },
   impact() {
     window.Telegram?.WebApp?.HapticFeedback?.impactOccurred?.("medium");
   },

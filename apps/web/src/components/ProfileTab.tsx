@@ -1,5 +1,6 @@
 import { Gift, RefreshCw, ShieldCheck } from "lucide-react";
 import type { MeResponse, SyncSummary } from "@bands/shared";
+import { tma } from "../lib/tma";
 
 type Props = {
   me: MeResponse | null;
@@ -11,6 +12,8 @@ type Props = {
 
 export function ProfileTab({ me, syncSummary, loading, error, onSync }: Props) {
   const user = me?.user;
+  const telegramAuthStatus = tma.hasInitData() ? "connected" : "missing";
+  const buildId = import.meta.env.VITE_BUILD_ID ?? "dev";
   return (
     <div className="space-y-4">
       <section className="rounded-lg bg-tg-secondary p-4">
@@ -32,6 +35,9 @@ export function ProfileTab({ me, syncSummary, loading, error, onSync }: Props) {
         <div className="mt-3 flex items-center gap-2 text-sm">
           <ShieldCheck size={18} className={user?.isQualified ? "text-emerald-400" : "text-tg-hint"} />
           {user?.isQualified ? "Qualified for premium votes" : "Sync target gifts to qualify"}
+        </div>
+        <div className="mt-3 rounded-md bg-black/20 px-3 py-2 text-xs text-tg-hint">
+          Telegram auth: {telegramAuthStatus} - build {buildId}
         </div>
       </section>
 

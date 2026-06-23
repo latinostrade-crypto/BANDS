@@ -38,7 +38,7 @@ export const api = {
     if (!tma.initData()) {
       sessionToken = null;
       localStorage.removeItem("bands_session");
-      throw new Error("Open the app from the Telegram bot Web App button");
+      throw new Error("Telegram auth data is missing. Open from the bot menu button, not as a regular link.");
     }
     const data = await request<{ token: string }>("/api/auth", { method: "POST" });
     sessionToken = data.token;
