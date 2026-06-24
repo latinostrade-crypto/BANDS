@@ -3,7 +3,7 @@ import { config } from "../config.js";
 
 export const pool = new pg.Pool({
   connectionString: config.databaseUrl,
-  ssl: config.databaseSsl ? { rejectUnauthorized: false } : undefined
+  ssl: config.databaseSsl ? { rejectUnauthorized: config.databaseSslRejectUnauthorized } : undefined
 });
 
 export type DbClient = pg.PoolClient | pg.Pool;

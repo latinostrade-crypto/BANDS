@@ -14,11 +14,15 @@ authRouter.post("/auth", async (req, res, next) => {
         throw new HttpError(403, "Missing Telegram init data", "missing_init_data");
       }
       const result = await pool.query(
-        `INSERT INTO users (tg_id, username, first_name, is_qualified, score, updated_at)
-         VALUES ($1, $2, $3, true, 0, NOW())
+        `INSERT INTO users (tg_id, username, first_name, is_qualified, is_premium, score, updated_at)
+         VALUES ($1, $2, $3, true, true, 0, NOW())
          ON CONFLICT (tg_id)
-         DO UPDATE SET username = EXCLUDED.username, first_name = EXCLUDED.first_name, updated_at = NOW()
-         RETURNING id, tg_id, username, first_name, is_qualified`,
+         DO UPDATE SET
+           username = EXCLUDED.username,
+           first_name = EXCLUDED.first_name,
+           is_premium = EXCLUDED.is_premium,
+           updated_at = NOW()
+         RETURNING id, tg_id, username, first_name, is_qualified, is_premium`,
         ["10001", "dev_user", "Dev"]
       );
       const user = {
@@ -26,7 +30,8 @@ authRouter.post("/auth", async (req, res, next) => {
         tgId: String(result.rows[0].tg_id),
         username: result.rows[0].username as string | null,
         firstName: result.rows[0].first_name as string | null,
-        isQualified: Boolean(result.rows[0].is_qualified)
+        isQualified: Boolean(result.rows[0].is_qualified),
+        isPremium: Boolean(result.rows[0].is_premium)
       };
       return res.json({ user, token: signSession(user.id), mode: "development" });
     }

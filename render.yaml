@@ -19,6 +19,8 @@ services:
         sync: false
       - key: DATABASE_SSL
         value: true
+      - key: DATABASE_SSL_REJECT_UNAUTHORIZED
+        value: true
       - key: REDIS_URL
         fromService:
           type: redis

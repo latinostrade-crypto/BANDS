@@ -26,6 +26,7 @@ const verifySchema = z.object({
   address: z.string().min(8),
   network: z.string().min(1),
   publicKey: z.string().min(32),
+  walletStateInit: z.string().min(16),
   proof: z.object({
     timestamp: z.number(),
     domain: z.object({ value: z.string(), lengthBytes: z.number().optional() }),

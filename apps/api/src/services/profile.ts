@@ -17,6 +17,8 @@ export const mapUser = (row: Record<string, unknown>): UserProfile => ({
   walletAddress: row.wallet_address as string | null,
   walletVerifiedAt: row.wallet_verified_at ? new Date(row.wallet_verified_at as string).toISOString() : null,
   isQualified: Boolean(row.is_qualified),
+  isPremium: Boolean(row.is_premium),
+  referrerId: row.referrer_id === null ? null : Number(row.referrer_id),
   score: Number(row.score),
   socialLikes: Number(row.social_likes)
 });
